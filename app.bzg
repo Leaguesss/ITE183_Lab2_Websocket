@@ -1,0 +1,50 @@
+
+include("lib/http.bzg");
+
+var server = http(8000);
+
+// HTTP ROUTING
+server.get = function (path, data) {
+    print("GET path: " + path);
+
+    if (path == "/") {
+        server.sendFile("public/index.html");
+    }
+    // Serve the EcoChat beluga whale logo
+    else if (path == "/beluga-logo.jpg") {
+        server.sendFile("public/beluga-logo.jpg");
+    }
+    // Serve existing image files
+    else if (path == "/penguin.png") {
+        server.sendFile("public/penguin.png");
+    }
+    else if (path == "/town_bg.png") {
+        server.sendFile("public/town_bg.png");
+    }
+    else if (path == "/plaza_bg.png") {
+        server.sendFile("public/plaza_bg.png");
+    }
+    // Custom 404 page
+    else {
+        server.sendFile("public/404.html");
+    }
+};
+
+// WEBSOCKET HANDLERS
+server.onConnect = function (clientId) {
+    print("EcoChat client connected! Client ID: " + clientId);
+    server.send(clientId, "SYSTEM:WELCOME:" + clientId);
+};
+
+server.onData = function (message, clientId) {
+    print("Payload from Client " + clientId + ": " + message);
+    server.sendAll(message);
+};
+
+server.onDisconnect = function (clientId) {
+    print("EcoChat client disconnected! Client ID: " + clientId);
+    server.sendAll("LEAVE:" + clientId);
+};
+
+// START SERVER
+server.run();

@@ -1,0 +1,1080 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b1422">
+    <title>EcoChat | Ocean Conversations</title>
+
+    <style>
+        :root {
+            --background: #0b1422;
+            --sidebar: #111e30;
+            --server-rail: #0d1929;
+            --panel: #17263a;
+            --hover: #223854;
+            --text: #edf5ff;
+            --muted: #91a8c5;
+            --accent: #27c3d7;
+            --accent-hover: #50d8e7;
+            --green: #50d6a0;
+            --border: #263951;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
+            background: var(--background);
+            color: var(--text);
+        }
+
+        button, input { font: inherit; }
+        button { cursor: pointer; }
+
+        .app {
+            display: grid;
+            grid-template-columns: 72px 230px minmax(0, 1fr) 220px;
+            height: 100vh;
+        }
+
+        /* SERVER RAIL */
+
+        .server-rail {
+            background: var(--server-rail);
+            padding: 12px 0;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            gap: 12px;
+            border-right: 1px solid #18283b;
+        }
+
+        .server-icon {
+            width: 48px;
+            height: 48px;
+            flex-shrink: 0;
+            border: 0;
+            border-radius: 17px;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            background: #1b2b40;
+            color: white;
+            font-size: 23px;
+            transition: border-radius .18s, background .18s;
+            position: relative;
+        }
+
+        .server-icon:hover,
+        .server-icon.active {
+            border-radius: 16px;
+            background: #164052;
+        }
+
+        .server-icon.active::before {
+            content: "";
+            position: absolute;
+            left: -7px;
+            width: 4px;
+            height: 30px;
+            border-radius: 0 5px 5px 0;
+            background: var(--accent);
+        }
+
+        .server-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .rail-divider {
+            width: 32px;
+            height: 2px;
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        .add-server {
+            color: var(--green);
+            font-size: 28px;
+        }
+
+        .rail-spacer { flex: 1; }
+
+        /* CHANNEL SIDEBAR */
+
+        .channel-sidebar {
+            background: var(--sidebar);
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            border-right: 1px solid var(--border);
+        }
+
+        .server-header {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 750;
+            font-size: 15px;
+        }
+
+        .server-header button {
+            border: 0;
+            color: var(--muted);
+            background: transparent;
+            font-size: 20px;
+        }
+
+        .brand {
+            padding: 18px 14px;
+            text-align: center;
+            background:
+                radial-gradient(ellipse at 50% 110%, #176b85 0%, transparent 65%),
+                linear-gradient(145deg, #163b5e, #10253b);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand-logo {
+            width: 110px;
+            height: 95px;
+            display: block;
+            margin: 0 auto 6px;
+            object-fit: contain;
+            border-radius: 14px;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 30px;
+            letter-spacing: -1px;
+            font-weight: 800;
+        }
+
+        .brand h1 span { color: var(--accent); }
+
+        .brand p {
+            margin: 7px 0 0;
+            color: #b7d0e8;
+            font-size: 10px;
+            letter-spacing: 1.3px;
+            text-transform: uppercase;
+        }
+
+        .channel-content {
+            padding: 20px 10px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .section-label {
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            padding: 0 8px;
+            margin: 0 0 9px;
+        }
+
+        .channel {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 10px;
+            margin: 3px 0;
+            border-radius: 6px;
+            color: var(--muted);
+            font-size: 14px;
+            cursor: pointer;
+            transition: background .15s, color .15s;
+        }
+
+        .channel:hover {
+            background: var(--hover);
+            color: var(--text);
+        }
+
+        .channel.active {
+            background: #294665;
+            color: white;
+        }
+
+        .channel-symbol {
+            font-size: 22px;
+            line-height: 1;
+            color: #809bb9;
+        }
+
+        .channel.active .channel-symbol { color: var(--accent); }
+
+        .channel-info {
+            margin-top: 25px;
+            padding: 12px;
+            border-radius: 9px;
+            background: #0c1827;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 11px;
+            line-height: 1.8;
+            overflow-wrap: anywhere;
+        }
+
+        .connection-line {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            color: var(--green);
+            font-weight: 700;
+        }
+
+        .connection-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            flex-shrink: 0;
+            background: var(--green);
+            border-radius: 50%;
+        }
+
+        .connection-dot.offline { background: #ed6673; }
+
+        .user-panel {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 12px 10px;
+            background: #0d1929;
+            border-top: 1px solid var(--border);
+            min-width: 0;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            flex-shrink: 0;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            border-radius: 50%;
+            color: white;
+            background: #20445e;
+            font-weight: 700;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-details { flex: 1; min-width: 0; }
+
+        .user-name {
+            font-size: 13px;
+            font-weight: 700;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .settings-button {
+            border: 0;
+            color: var(--muted);
+            background: transparent;
+            font-size: 19px;
+        }
+
+        .settings-button:hover { color: var(--accent); }
+
+        /* MAIN CHAT */
+
+        .chat {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            min-height: 0;
+            background:
+                radial-gradient(ellipse at 50% 0%, #142b43 0%, transparent 48%),
+                #0e1928;
+        }
+
+        .chat-header {
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(20, 34, 52, .8);
+        }
+
+        .hash {
+            font-size: 27px;
+            color: var(--accent);
+            font-weight: 400;
+        }
+
+        .chat-title {
+            font-weight: 750;
+            font-size: 15px;
+        }
+
+        .header-divider {
+            width: 1px;
+            height: 25px;
+            background: var(--border);
+            margin: 0 4px;
+        }
+
+        .header-subtitle {
+            color: var(--muted);
+            font-size: 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .header-spacer { flex: 1; }
+
+        .search-input {
+            width: 130px;
+            min-width: 0;
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            background: #0b1625;
+            color: white;
+            outline: none;
+        }
+
+        .search-input:focus { border-color: var(--accent); }
+
+        .messages {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 22px 20px 15px;
+            scrollbar-color: #263951 transparent;
+        }
+
+        .welcome {
+            padding: 18px 0 24px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 22px;
+        }
+
+        .welcome-art {
+            width: 100%;
+            min-height: 145px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 12px;
+            background:
+                radial-gradient(ellipse, rgba(39,195,215,.12), transparent 65%);
+        }
+
+        .welcome-art img {
+            max-width: 220px;
+            width: 55%;
+            height: 145px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 20px rgba(39,195,215,.12));
+        }
+
+        .welcome h1 {
+            font-size: clamp(23px, 3vw, 32px);
+            margin: 0 0 8px;
+            letter-spacing: -.6px;
+        }
+
+        .welcome h1 span { color: var(--accent); }
+
+        .welcome p {
+            color: #b4c8df;
+            font-size: 14px;
+            margin: 0;
+            line-height: 1.8;
+        }
+
+        .date-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 700;
+            margin: 20px 0;
+            white-space: nowrap;
+        }
+
+        .date-divider::before,
+        .date-divider::after {
+            content: "";
+            height: 1px;
+            background: var(--border);
+            flex: 1;
+        }
+
+        .message {
+            display: flex;
+            gap: 13px;
+            padding: 9px 8px;
+            margin: 0 -8px 3px;
+            border-radius: 5px;
+            animation: appear .18s ease-out;
+        }
+
+        .message:hover { background: #19283a; }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            overflow: hidden;
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+            background: #23465f;
+        }
+
+        .message-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .message-body { min-width: 0; flex: 1; }
+
+        .message-meta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .message-author {
+            font-size: 14px;
+            font-weight: 750;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .message-text {
+            color: #dce7f5;
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .system-message .message-avatar {
+            background: #263b52;
+            color: var(--accent);
+        }
+
+        .system-message .message-author { color: var(--accent); }
+
+        .system-message .message-text {
+            color: var(--muted);
+            font-size: 12px;
+            font-style: italic;
+        }
+
+        @keyframes appear {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* MESSAGE COMPOSER */
+
+        .composer-area { padding: 0 20px 20px; }
+
+        .composer {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #1a2a40;
+            border-radius: 10px;
+            padding: 5px 7px 5px 15px;
+            border: 1px solid #344b67;
+            transition: border-color .15s;
+        }
+
+        .composer:focus-within { border-color: var(--accent); }
+
+        .composer input {
+            flex: 1;
+            min-width: 0;
+            padding: 12px 0;
+            background: transparent;
+            color: white;
+            border: 0;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .composer input::placeholder { color: #91a8c5; }
+
+        .composer input:disabled { cursor: not-allowed; }
+
+        .send-button {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+            display: grid;
+            place-items: center;
+            border: 0;
+            border-radius: 50%;
+            color: #082333;
+            background: var(--accent);
+            font-size: 19px;
+            transition: background .15s, transform .15s;
+        }
+
+        .send-button:hover:not(:disabled) {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .send-button:disabled {
+            opacity: .4;
+            cursor: not-allowed;
+        }
+
+        .composer-hint {
+            color: #7087a3;
+            font-size: 10px;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        /* COMMUNITY PANEL */
+
+        .members {
+            background: var(--sidebar);
+            padding: 22px 13px;
+            border-left: 1px solid var(--border);
+            overflow-y: auto;
+        }
+
+        .member-group-title {
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: .6px;
+            margin: 4px 0 14px 7px;
+        }
+
+        .member {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 8px 6px;
+            border-radius: 6px;
+            color: #e0eaf7;
+            font-size: 12px;
+            margin-bottom: 3px;
+            min-width: 0;
+        }
+
+        .member:hover { background: var(--hover); }
+
+        .member .avatar {
+            width: 34px;
+            height: 34px;
+            font-size: 13px;
+        }
+
+        .member-info { min-width: 0; }
+
+        .member-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .member-label {
+            color: var(--muted);
+            font-size: 10px;
+            margin-top: 4px;
+        }
+
+        .member-dot {
+            width: 8px;
+            height: 8px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background: var(--green);
+            margin-left: auto;
+        }
+
+        .community-note {
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.7;
+            padding: 15px 7px;
+            margin-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .community-note strong { color: #dbe9f9; }
+
+        @media (max-width: 1050px) {
+            .app { grid-template-columns: 64px 205px minmax(0, 1fr); }
+            .members { display: none; }
+            .header-subtitle { display: none; }
+        }
+
+        @media (max-width: 650px) {
+            .app { grid-template-columns: 52px minmax(0, 1fr); }
+            .server-rail { gap: 9px; }
+            .server-icon { width: 39px; height: 39px; }
+            .channel-sidebar { display: none; }
+            .chat-header { padding: 0 12px; }
+            .messages { padding: 14px 12px; }
+            .composer-area { padding: 0 10px 12px; }
+            .search-input { width: 100px; }
+            .welcome-art { min-height: 110px; }
+            .welcome-art img { height: 110px; }
+            .welcome h1 { font-size: 23px; }
+        }
+    </style>
+</head>
+
+<body>
+<div class="app">
+
+    <!-- SERVER RAIL -->
+    <aside class="server-rail">
+        <button class="server-icon active" title="EcoChat">
+            <img src="/beluga-logo.jpg" alt="EcoChat logo">
+        </button>
+        <div class="rail-divider"></div>
+        <button class="server-icon" title="Community">◎</button>
+        <button class="server-icon add-server" title="More servers">+</button>
+        <div class="rail-spacer"></div>
+        <button class="server-icon" id="railSettings" title="Connection settings">⚙</button>
+    </aside>
+
+    <!-- CHANNEL SIDEBAR -->
+    <aside class="channel-sidebar">
+        <div class="server-header">
+            <span>EcoChat</span>
+            <button title="Server information" id="serverInfoButton">⌄</button>
+        </div>
+
+        <div class="brand">
+            <img class="brand-logo" src="/beluga-logo.jpg" alt="Beluga whale">
+            <h1>eco<span>chat</span></h1>
+            <p>Good vibes. Clean oceans.</p>
+        </div>
+
+        <div class="channel-content">
+            <h2 class="section-label">⌄ TEXT CHANNELS</h2>
+
+            <div class="channel active" data-channel="general" role="button" tabindex="0">
+                <span class="channel-symbol">#</span><span>general</span>
+            </div>
+            <div class="channel" data-channel="introductions" role="button" tabindex="0">
+                <span class="channel-symbol">#</span><span>introductions</span>
+            </div>
+            <div class="channel" data-channel="off-topic" role="button" tabindex="0">
+                <span class="channel-symbol">#</span><span>off-topic</span>
+            </div>
+            <div class="channel" data-channel="announcements" role="button" tabindex="0">
+                <span class="channel-symbol">#</span><span>announcements</span>
+            </div>
+
+            <h2 class="section-label" style="margin-top:25px;">⌄ VOICE CHANNELS</h2>
+            <div class="channel">
+                <span class="channel-symbol">◖))</span><span>Ocean lounge</span>
+            </div>
+
+            <div class="channel-info">
+                <div class="connection-line">
+                    <span class="connection-dot offline" id="connectionDot"></span>
+                    <span id="connectionText">Connecting...</span>
+                </div>
+                <div>WebSocket server</div>
+                <div>localhost:8000</div>
+            </div>
+        </div>
+
+        <div class="user-panel">
+            <div class="avatar">
+                <img src="/beluga-logo.jpg" alt="EcoUser">
+            </div>
+            <div class="user-details">
+                <div class="user-name">EcoUser</div>
+                <div class="user-status">
+                    <span class="connection-dot offline" id="profileDot"></span>
+                    <span id="userStatus">Connecting...</span>
+                </div>
+            </div>
+            <button class="settings-button" id="settingsButton" title="Connection settings">⚙</button>
+        </div>
+    </aside>
+
+    <!-- MAIN CHAT -->
+    <main class="chat">
+        <header class="chat-header">
+            <span class="hash">#</span>
+            <span class="chat-title" id="channelTitle">general</span>
+            <span class="header-divider"></span>
+            <span class="header-subtitle">Good vibes. Clean oceans. Great conversations.</span>
+            <span class="header-spacer"></span>
+            <input class="search-input" id="searchInput" type="search"
+                   placeholder="Search messages..." aria-label="Search messages">
+        </header>
+
+        <section class="messages" id="messages" aria-live="polite">
+            <div class="welcome" id="welcome">
+                <div class="welcome-art">
+                    <img src="/beluga-logo.jpg" alt="Beluga whale">
+                </div>
+                <h1>Welcome to <span>ecochat</span>!</h1>
+                <p>
+                    This is the beginning of the <strong id="welcomeChannel">#general</strong> channel.<br>
+                    Let's keep the ocean and our conversations clean!
+                </p>
+            </div>
+
+            <div class="date-divider"><span>OCEAN CONVERSATIONS</span></div>
+            <div id="messageList"></div>
+        </section>
+
+        <div class="composer-area">
+            <form class="composer" id="chatForm">
+                <input
+                    type="text"
+                    id="msgInput"
+                    placeholder="Message #general"
+                    maxlength="2000"
+                    autocomplete="off"
+                    disabled
+                    aria-label="Type your message"
+                >
+                <button class="send-button" id="sendBtn" type="submit"
+                        disabled title="Send message" aria-label="Send message">➤</button>
+            </form>
+            <div class="composer-hint">ENTER TO SEND · REAL-TIME WEBSOCKET CHAT</div>
+        </div>
+    </main>
+
+    <!-- COMMUNITY PANEL -->
+    <aside class="members">
+        <h2 class="member-group-title">COMMUNITY</h2>
+
+        <div class="member">
+            <div class="avatar">
+                <img src="/beluga-logo.jpg" alt="">
+            </div>
+            <div class="member-info">
+                <div class="member-name">EcoUser</div>
+                <div class="member-label">Your profile</div>
+            </div>
+            <div class="member-dot"></div>
+        </div>
+
+        <div class="community-note">
+            <strong>Welcome to EcoChat!</strong><br>
+            A little space for good conversations and ocean-inspired vibes.
+            Connect with other members and start chatting.
+        </div>
+
+        <div class="community-note">
+            <strong>Test your connection</strong><br>
+            Open EcoChat in another browser window to test real-time message broadcasting between clients.
+        </div>
+    </aside>
+
+</div>
+
+<script>
+    const wsUrl = "ws://localhost:8000";
+
+    const messages = document.getElementById("messages");
+    const messageList = document.getElementById("messageList");
+    const welcome = document.getElementById("welcome");
+    const msgInput = document.getElementById("msgInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const chatForm = document.getElementById("chatForm");
+    const connectionDot = document.getElementById("connectionDot");
+    const profileDot = document.getElementById("profileDot");
+    const connectionText = document.getElementById("connectionText");
+    const userStatus = document.getElementById("userStatus");
+    const channelTitle = document.getElementById("channelTitle");
+    const welcomeChannel = document.getElementById("welcomeChannel");
+    const searchInput = document.getElementById("searchInput");
+
+    let socket = null;
+    let reconnectTimer = null;
+    let manuallyClosed = false;
+    let activeChannel = "general";
+
+    // Used to suppress echoes of messages sent by this browser.
+    // With plain-text broadcasts, identical simultaneous messages from
+    // different users cannot be reliably distinguished.
+    const pendingMessages = [];
+
+    function scrollToBottom() {
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    function currentTime() {
+        return new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+    }
+
+    function avatarColor(name) {
+        const colors = ["#167c91", "#278b70", "#536bd8", "#9a5eb5", "#357da8"];
+        let hash = 0;
+
+        for (let i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+
+        return colors[Math.abs(hash) % colors.length];
+    }
+
+    function appendMessage(author, text, type = "received") {
+        welcome.style.display = "none";
+
+        const row = document.createElement("article");
+        row.className = "message" + (type === "system" ? " system-message" : "");
+
+        const avatar = document.createElement("div");
+        avatar.className = "message-avatar";
+
+        if (type === "system") {
+            avatar.textContent = "✦";
+        } else if (type === "sent") {
+            const image = document.createElement("img");
+            image.src = "/beluga-logo.jpg";
+            image.alt = "";
+            avatar.appendChild(image);
+        } else {
+            avatar.textContent = author.charAt(0).toUpperCase();
+            avatar.style.background = avatarColor(author);
+        }
+
+        const body = document.createElement("div");
+        body.className = "message-body";
+
+        const meta = document.createElement("div");
+        meta.className = "message-meta";
+
+        const name = document.createElement("span");
+        name.className = "message-author";
+        name.textContent = author;
+
+        const time = document.createElement("span");
+        time.className = "message-time";
+        time.textContent = currentTime();
+
+        const content = document.createElement("div");
+        content.className = "message-text";
+        content.textContent = text;
+
+        meta.append(name, time);
+        body.append(meta, content);
+        row.append(avatar, body);
+        messageList.appendChild(row);
+
+        // Apply the current search filter to newly received messages.
+        applySearchFilter();
+        scrollToBottom();
+    }
+
+    function setConnectionStatus(connected, text) {
+        connectionDot.classList.toggle("offline", !connected);
+        profileDot.classList.toggle("offline", !connected);
+
+        connectionText.textContent = text;
+        userStatus.textContent = connected ? "Online" : "Offline";
+
+        msgInput.disabled = !connected;
+        sendBtn.disabled = !connected;
+
+        msgInput.placeholder = connected
+            ? "Message #" + activeChannel
+            : "Waiting for server connection...";
+    }
+
+    function scheduleReconnect() {
+        if (manuallyClosed) return;
+
+        clearTimeout(reconnectTimer);
+        reconnectTimer = setTimeout(connect, 3000);
+    }
+
+    function connect() {
+        clearTimeout(reconnectTimer);
+        setConnectionStatus(false, "Connecting...");
+
+        try {
+            socket = new WebSocket(wsUrl);
+        } catch (error) {
+            setConnectionStatus(false, "Connection failed");
+            scheduleReconnect();
+            return;
+        }
+
+        socket.addEventListener("open", function () {
+            setConnectionStatus(true, "Connected");
+            appendMessage("EcoChat", "You're connected. Welcome to the ocean!", "system");
+            msgInput.focus();
+        });
+
+        socket.addEventListener("message", function (event) {
+            const message = String(event.data);
+
+            if (message.startsWith("SYSTEM:WELCOME:")) {
+                const clientId = message.substring("SYSTEM:WELCOME:".length);
+                appendMessage("EcoChat", "Welcome! Your client ID is " + clientId + ".", "system");
+                return;
+            }
+
+            if (message.startsWith("LEAVE:")) {
+                appendMessage("EcoChat", "A client has disconnected.", "system");
+                return;
+            }
+
+            const ownIndex = pendingMessages.indexOf(message);
+
+            if (ownIndex !== -1) {
+                pendingMessages.splice(ownIndex, 1);
+                return;
+            }
+
+            appendMessage("Member", message, "received");
+        });
+
+        socket.addEventListener("close", function () {
+            setConnectionStatus(false, "Disconnected");
+
+            if (!manuallyClosed) {
+                appendMessage("EcoChat", "Connection lost. Reconnecting in a moment...", "system");
+                scheduleReconnect();
+            }
+        });
+
+        socket.addEventListener("error", function () {
+            setConnectionStatus(false, "Connection error");
+        });
+    }
+
+    chatForm.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const text = msgInput.value.trim();
+
+        if (!text || !socket || socket.readyState !== WebSocket.OPEN) {
+            return;
+        }
+
+        socket.send(text);
+        pendingMessages.push(text);
+
+        // Display immediately for the sender.
+        appendMessage("EcoUser", text, "sent");
+
+        msgInput.value = "";
+        msgInput.focus();
+    });
+
+    // Channel buttons update the interface. The existing server still
+    // broadcasts all messages through one shared WebSocket stream.
+    document.querySelectorAll("[data-channel]").forEach(function (channel) {
+        function selectChannel() {
+            document.querySelectorAll("[data-channel]").forEach(function (item) {
+                item.classList.remove("active");
+            });
+
+            channel.classList.add("active");
+            activeChannel = channel.dataset.channel;
+
+            channelTitle.textContent = activeChannel;
+            welcomeChannel.textContent = "#" + activeChannel;
+            msgInput.placeholder = "Message #" + activeChannel;
+
+            appendMessage(
+                "EcoChat",
+                "Selected #" + activeChannel + ". Messages still use the shared server stream.",
+                "system"
+            );
+        }
+
+        channel.addEventListener("click", selectChannel);
+
+        channel.addEventListener("keydown", function (event) {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                selectChannel();
+            }
+        });
+    });
+
+    function applySearchFilter() {
+        const query = searchInput.value.toLowerCase().trim();
+
+        messageList.querySelectorAll(".message").forEach(function (message) {
+            message.style.display = message.textContent.toLowerCase().includes(query)
+                ? "flex"
+                : "none";
+        });
+    }
+
+    searchInput.addEventListener("input", applySearchFilter);
+
+    function showConnectionInfo() {
+        const connected = socket && socket.readyState === WebSocket.OPEN;
+
+        alert(
+            "EcoChat WebSocket\n\n" +
+            "Server: " + wsUrl + "\n" +
+            "Status: " + (connected ? "Connected" : "Disconnected")
+        );
+    }
+
+    document.getElementById("settingsButton").addEventListener("click", showConnectionInfo);
+    document.getElementById("railSettings").addEventListener("click", showConnectionInfo);
+    document.getElementById("serverInfoButton").addEventListener("click", showConnectionInfo);
+
+    window.addEventListener("beforeunload", function () {
+        manuallyClosed = true;
+        clearTimeout(reconnectTimer);
+
+        if (socket) socket.close();
+    });
+
+    connect();
+</script>
+</body>
+</html>
